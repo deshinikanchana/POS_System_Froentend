@@ -2,11 +2,13 @@ let isvalid = false;
 let idVal = false;
 let nameVal = false;
 let salVal = false;
+let count1;
 let Custcount = $('#tblCustomers').find('tr').length;
 
 $('#custBtn').click(function (event) {
     $('#txtCustId').focus();
     clearAllCust();
+    loadAllCustomerToTheTable();
 });
 
 
@@ -24,9 +26,32 @@ $('#btnAddCust').click(function (event) {
              isvalid =true;
          }
 
+         isAvailableCus(id);
+
         if(isvalid){
-        let row=saveCustomer(id,name,address,salary);
-        if(row)clearAllCust();
+            const customData = {
+                cusId:id,
+                cusName:name,
+                cusAddress:address,
+                cusSalary:salary
+            };
+
+
+            const custJSON = JSON.stringify(customData)
+            
+            $.ajax({
+                url:"http://localhost:8080/Pos_System_App/customer",
+                type: "POST",
+                data:custJSON,
+                headers:{"Content-Type" : "application/json"},
+                success: (res)=>{
+                    console.log(JSON.stringify(res));
+                    clearAllCust();
+                },
+                error:(res)=>{
+                    console.log("res :" + res)
+                }
+            })
         Custcount = Custcount+1;
         }
 
@@ -39,34 +64,17 @@ $('#btnAddCust').click(function (event) {
 // ---------------------------------------------------------------------clear Fields ---------------------------------------------------------------------
 
 $('#btnClearCust').click(function(){
+
     clearAllCust();
-    var custText = document.getElementById('txtCustId');
-    custText.disabled = false;
+     var custText = document.getElementById('txtCustId');
+     custText.disabled = false;
+     loadAllCustomerToTheTable();
 });
 
 // ---------------------------------------------------------------------Get Customer Details---------------------------------------------------------------------
 
 $('#btnGetAllCust').click(function(){
-    if($('#txtCustId').val().length > 1){
-    let want=searchCustomer($('#txtCustId').val());
-
-    console.log(want);
-    if (want != null){
-        $("#txtCustId").val(want.getCustomerId());
-        $("#txtName").val(want.getCustomerName());
-        $("#txtAddress").val(want.getCustomerAddress());
-        $("#txtSalary").val(want.getCustomerSalary());
-
-        var custText = document.getElementById('txtCustId');
-        custText.disabled = true;
-
-    }else {
-       alert("Customer Not Found !");
-       clearAllCust();
-    }
-} else{
-    alert('Enter a Customer Id !')
-}
+    searchCustomer($("#txtCustId").val());
 });
 
 // ---------------------------------------------------------------------Update Customer---------------------------------------------------------------------
@@ -77,130 +85,184 @@ $("#btnUpdateCust").click(function () {
     let address = $("#txtAddress").val();
     let salary = $("#txtSalary").val();
 
-    let option=confirm(`Do you want to Update Customer ID:${id}`);
-    if (option){
-        let res= updateCustomer(id, name, address, salary);
-        if (res){
-            alert("Customer Updated");
-            var custText = document.getElementById('txtCustId');
-            custText.disabled = false;
-        }else{
-            alert("Update Failed");
-        }
-    }
-    loadAllCustomerToTheTable();
-    clearAllCust();
+    let option = confirm(`Do you want to Update Customer ID: ${id}`);
+    if (option) {
+        const customerData = {
+            cusName: name,
+            cusAddress: address,
+            cusSalary: salary
+        };
 
+        $.ajax({
+            url: "http://localhost:8080/Pos_System_App/customer?cusId=" + `${id}`,
+            type: "PUT",
+            data: JSON.stringify(customerData),
+            headers: { "Content-Type": "application/json" },
+            success: (resp) => {
+                console.log(JSON.stringify(resp));
+                alert("Customer Updated Successfully");
+                clearAllCust();
+                
+            },
+            error: (jqXHR, textStatus, errorThrown) => {
+                console.log("Error: " + textStatus + ", " + errorThrown);
+                console.log("Response: ", jqXHR.responseText);
+                alert("Update Failed: " + jqXHR.responseText);
+            }
+        });
+
+    }
 });
 
 // ---------------------------------------------------------------------Delete Customer---------------------------------------------------------------------
 
-$("#btnDeleteCust").click(function () {
-    let id = $("#txtCustId").val();
-    let option=confirm(`Do you want to delete ID:${id}`);
+    $("#btnDeleteCust").click(function (){
+        var id = $('#txtCustId').val();
+        if($('#txtCustId').val().length > 1){
+        let option=confirm(`Do you want to delete ID:${id}`);
 
-    if (option){
-        let res=deleteCustomer(id);
-        if (res){
-            alert("Customer Deleted");
-            Custcount = Custcount-1;
-            var custText = document.getElementById('txtCustId');
-            custText.disabled = false;
-        } else{
-            alert("Delete Failed")
+        if (option){
+            $.ajax({
+                url:"http://localhost:8080/Pos_System_App/customer?cusId=" + `${id}`,
+                type: "DELETE",
+                headers:{"Content-Type" : "application/json"},
+                success: (res)=>{
+                    console.log(JSON.stringify(res)); 
+                    alert("Customer Deleted");
+                    Custcount = Custcount-1;
+                    var custText = document.getElementById('txtCustId');
+                    custText.disabled = false;
+                    clearAllCust();
+                },
+                error:(res)=>{
+                    console.log("res :" + res)
+                    alert("Customer Delete Failed")
+                    return null; 
+                }
+            });
         }
     }
-    loadAllCustomerToTheTable();
-    clearAllCust();
 });
 
 
-// ---------------------------------------------------------------------Functions---------------------------------------------------------------------
+    $('#customerTable').on('click', 'tr', function(e){
+        tableText($(this).html());
+      });
+      
+      function tableText(tableRow) {
+        var myJSON = JSON.stringify(tableRow);
+        searchCustomer(myJSON.slice(5,12));
+      }
 
 
-function saveCustomer(id, name, address, salary) {
-    let customer = new CustomerDTO(id, name, address, salary);
 
-    customerTable.push(customer);// customer aded
-    loadAllCustomerToTheTable();
-
-    $('#tblCustomers>tr').click(function () {
-        var custText = document.getElementById('txtCustId');
-        custText.disabled = true;
-
-        let id = $(this).children('td:eq(0)').text();
-        let name = $(this).children('td:eq(1)').text();
-        let address = $(this).children('td:eq(2)').text();
-        let salary = $(this).children('td:eq(3)').text();
-        
-        $("#txtCustId").val(id);
-        $("#txtName").val(name);
-        $("#txtAddress").val(address);
-        $("#txtSalary").val(salary);
-
-    });
-
-    return true;
-}
+ // ---------------------------------------------------------------------Functions---------------------------------------------------------------------
 
 function loadAllCustomerToTheTable() {
-    let allCustomers = getAllCustomers();
-    $('#tblCustomers').empty();
-    for (var i in allCustomers) {
-        let id = allCustomers[i].getCustomerId();
-        let name = allCustomers[i].getCustomerName();
-        let address = allCustomers[i].getCustomerAddress();
-        let salary = allCustomers[i].getCustomerSalary();
+    getAllCustomers();
+}
+
+ function getAllCustomers() {
+    var AllCustomersData =[];
+    $.ajax({
+        url:"http://localhost:8080/Pos_System_App/customer",
+        type: "GET",
+        headers:{"Content-Type" : "application/json"},
+        success: (res)=>{
+            console.log(JSON.stringify(res));  
+
+            for(let i =0;i<res.length;i++){
+                let myOne = res[i];
+                var AllValues = Object.keys(myOne).map(function (key){
+                    return myOne[key];
+
+                })
+                AllCustomersData.push(new CustomerDTO(AllValues[1],AllValues[2],AllValues[0],AllValues[3]));
+              
+                $('#tblCustomers').empty();
+                for (let j =0;j<AllCustomersData.length;j++) {
+                    let id = AllCustomersData[j].getCustomerId();
+                    let name = AllCustomersData[j].getCustomerName();
+                    let address = AllCustomersData[j].getCustomerAddress();
+                    let salary = AllCustomersData[j].getCustomerSalary();
 
 
         var row = `<tr><td>${id}</td><td>${name}</td><td>${address}</td><td>${salary}</td></tr>`;
         $('#tblCustomers').append(row);
     }
-}
-
- function getAllCustomers() {
-     return customerTable;
+            }
+            count1 = AllCustomersData.length;
+        },
+        error:(res)=>{
+            console.log("res :" + res)
+            return null;
+        }
+    })
  }
 
 
 function searchCustomer(id) {
-    for (var i in customerTable){
-        if (customerTable[i].getCustomerId()==id) return customerTable[i];
-    }
-    return null;
+    if(id.length > 1){
+        $.ajax({
+            url:"http://localhost:8080/Pos_System_App/customer",
+            type: "GET",
+            data:{"cusId": id},
+            headers:{"Content-Type" : "application/json"},
+            success: (res)=>{
+                console.log(JSON.stringify(res));   
+              
+                var values = Object.keys(res).map(function (key){
+                    return res[key];
+                })
+               var newData = new CustomerDTO(values[1],values[2],values[0],values[3]);
+               if (newData != null){
+                    $("#txtCustId").val(newData.getCustomerId());
+                    $("#txtName").val(newData.getCustomerName());
+                    $("#txtAddress").val(newData.getCustomerAddress());
+                    $("#txtSalary").val(newData.getCustomerSalary());
+            
+                    var custText = document.getElementById('txtCustId');
+                    custText.disabled = true;
+                }else {
+                alert("Customer Not Found !");
+                clearAllCust();
+                }
+            },
+            error:(res)=>{
+                console.log("res :" + res)
+               
+            }
+        })
+
+    } else{
+    alert('Enter a Customer Id !')
+}
 }
 
 
 function isAvailableCus(id){
-    for (var i in customerTable){
-        if (customerTable[i].getCustomerId()==id) return true;
-    }
-    return false;
-}
+    $.ajax({
+        url:"http://localhost:8080/Pos_System_App/customer",
+        type: "GET",
+        data:{"cusId": id},
+        headers:{"Content-Type" : "application/json"},
+        success: (res)=>{
+            console.log(JSON.stringify(res));   
+          
+            var values = Object.keys(res).map(function (key){
+                return res[key];
+            })
 
-
-function updateCustomer(id, name, address, salary) {    
-    let customer = searchCustomer(id);
-    if (customer != null) {
-        customer.setCustomerName(name)
-        customer.setCustomerAddress(address)
-        customer.setCustomerSalary(salary);
-        return true;
-    } else {
-        return false;
-    }
-}
-
-
-function deleteCustomer(id) {
-    let customer = searchCustomer(id);
-    if (customer != null) {
-        let indexNumber = customerTable.indexOf(customer);
-        customerTable.splice(indexNumber, 1);
-        return true;
-    } else {
-        return false;
-    }
+          if(values[1] != id){
+            return false;
+          }
+          alert("This ID Already Added !!!")
+        },
+        error:(res)=>{
+            console.log("res :" + res)
+           
+        }
+    })
 }
 
 
@@ -214,6 +276,7 @@ function clearAllCust() {
     $("#custnam").text('');
     $("#custSal").text('');
     normalAll();
+    loadAllCustomerToTheTable();
 
 
 }

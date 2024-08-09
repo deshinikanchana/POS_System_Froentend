@@ -175,6 +175,26 @@ right: 1.25rem;
     
 }
 
+.btn{
+    color: black;
+}
+
+.btn:hover{
+    color: white;
+}
+
+#addToCart:hover{
+    background-color: green;
+}
+#UpdateItem:hover{
+    background-color: rgb(15, 53, 15);
+}
+#RemoveItem:hover{
+    background-color: rgb(88, 4, 4);
+}
+
+
+
 .btnsset{
     border-radius: 20%;
     border-color: white;
@@ -398,6 +418,7 @@ tr{
    margin-left: 40%;
    margin-bottom: 10px;
 }
+
 .balTopics{
     margin-left: 3%;
     font-size: 15px;

@@ -4,14 +4,11 @@ var customers=document.getElementById('customers');
 var item=document.getElementById('item');
 var order=document.getElementById('orders');
 
-$('#homeBtn').click(function (event) {
-    let customersAll = getAllCustomers();
-    let ItemAll = getAllItems();
-    let OrdersAll = getAllODs();
-    
-    document.getElementById('lblCountCust').innerHTML = customersAll.length;;
-    document.getElementById('lblCountItem').innerHTML = ItemAll.length;
-    document.getElementById('lblCountOrd').innerHTML = OrdersAll.length;
+
+$('#homeBtn').click(function (event) {   
+    document.getElementById('lblCountCust').innerHTML = count1;
+     document.getElementById('lblCountItem').innerHTML = count2;
+     document.getElementById('lblCountOrd').innerHTML = count3;
 });
 
 

@@ -16,6 +16,8 @@ var selections = document.getElementById("items");
 function generateOrderId() {
     try {
         let lastOID = orderTable[orderTable.length-1].getOrderId();
+
+
         let newOID = parseInt(lastOID.substring(1,4))+1;
         if (newOID < 10) {
             $("#txtOrderId").val("O00"+newOID);
@@ -432,7 +434,7 @@ function updateCart(id,qty){
             $('#tblOrders').append(nRow);
         }
     }
-    alert('No Items In Cart !')
+    // alert('No Items In Cart !')
 }
 
 function getAllOrders(oId){
