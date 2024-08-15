@@ -17,6 +17,7 @@ $('#itemBtn').click(function (event) {
 // ---------------------------------------------------------------------Save Item---------------------------------------------------------------------
 $('#btnAddItem').click(function (event) {
 
+    itemTable = [];
     let code=$('#txtItemCode').val();
     let name = $('#txtItemName').val();
     let qty = $('#txtItemQty').val();
@@ -48,6 +49,7 @@ $('#btnAddItem').click(function (event) {
                 headers:{"Content-Type" : "application/json"},
                 success: (res)=>{
                     console.log(JSON.stringify(res));
+                    itemTable.push(itemData);
                     clearAllItems();
                 },
                 error:(res)=>{
@@ -62,9 +64,35 @@ $('#btnAddItem').click(function (event) {
         event.preventDefault()
     }
 });
+
+function isAvailable(code){
+    $.ajax({
+        url:"http://localhost:8080/Pos_System_App/item",
+        type: "GET",
+        data:{"itemCode": code},
+        headers:{"Content-Type" : "application/json"},
+        success: (res)=>{
+            console.log(JSON.stringify(res));   
+            var test = Object.keys(res).map(function (key){
+                return res[key];
+            })
+
+          if(test[0] != code){
+            return false;
+          }
+          alert("This ID Already Added !!!")
+        },
+        error:(res)=>{
+            console.log("res :" + res)
+           
+        }
+    })
+}
+
 // ---------------------------------------------------------------------clear Fields ---------------------------------------------------------------------
 
 $('#btnClearItem').click(function(){
+    itemTable = [];
     clearAllItems();
     var itemText = document.getElementById('txtItemCode');
     itemText.disabled = false;
@@ -74,8 +102,54 @@ $('#btnClearItem').click(function(){
 // ---------------------------------------------------------------------Get Item Details---------------------------------------------------------------------
 
 $('#btnGetAllItem').click(function(){
-    searchItem($('#txtItemCode').val());
+ searchItem($('#txtItemCode').val());
 });
+
+
+function searchItem(code) {
+    if(code.length>1){
+        $.ajax({
+            url:"http://localhost:8080/Pos_System_App/item",
+            type: "GET",
+            data:{"itemCode": code},
+            headers:{"Content-Type" : "application/json"},
+            success: (res)=>{
+                console.log(JSON.stringify(res));   
+              
+                var values = Object.keys(res).map(function (key){
+                    return res[key];
+                })
+
+               let data = new ItemDTO(values[0],values[1],values[3],values[2]);
+               
+
+               console.log(itemTable.length);
+               if (data){
+                    $("#txtItemCode").val(data.getItemCode());
+                    $("#txtItemName").val(data.getItemName());
+                    $("#txtItemQty").val(data.getItemQty());
+                    $("#txtItemPrice").val(data.getItemPrice());
+            
+                    var itemtxt = document.getElementById('txtItemCode');
+                    itemtxt.disabled = true;
+                }else {
+                alert("Item Not Found !");
+                itemTable = [];
+                clearAllItems();
+                }
+            },
+            error:(res)=>{
+                console.log("res :" + res)
+               return;
+            }
+            
+        })
+    } else{
+        alert('Enter a Item Code !')
+    }
+    return;
+}
+
 
 // ---------------------------------------------------------------------Update Item---------------------------------------------------------------------
 
@@ -100,9 +174,16 @@ $("#btnUpdateItem").click(function () {
             headers: { "Content-Type": "application/json" },
             success: (resp) => {
                 console.log(JSON.stringify(resp));
-                alert("Item Updated Successfully");
-                clearAllItems();
-                
+
+                let items = searchitem(code);
+                itemTable = [];
+                if (items != null) {
+                    items.setItemName(name)
+                    items.setItemQty(qty)
+                    items.setItemPrice(price); 
+                    alert("Item Updated Successfully");
+                    clearAllItems();
+                }
             },
             error: (jqXHR, textStatus, errorThrown) => {
                 console.log("Error: " + textStatus + ", " + errorThrown);
@@ -114,6 +195,21 @@ $("#btnUpdateItem").click(function () {
 
 });
 
+
+function itemUpdate(updItem){
+    let item = searchitem(updItem.getItemCode());
+    if (item != null) {
+        item.setItemName(updItem.getItemName())
+        item.setItemQty(updItem.getItemQty())
+        item.setItemPrice(updItem.getItemPrice());
+
+        console.log(item.getItemQty())
+        
+        return true;
+    } else {
+        return false;
+    }
+}
 // ---------------------------------------------------------------------Delete Item---------------------------------------------------------------------
 
 $("#btnDeleteItem").click(function () {
@@ -127,11 +223,19 @@ $("#btnDeleteItem").click(function () {
             headers:{"Content-Type" : "application/json"},
             success: (res)=>{
                 console.log(JSON.stringify(res)); 
+
+                let items = searchitem(code);
+                if (items != null) {
+                    let indexNumber = itemTable.indexOf(items);
+                    itemTable.splice(indexNumber, 1);
+
                 alert("Item Deleted");
+                itemTable = [];
                 Itemcount = Itemcount-1;
                 var itemText = document.getElementById('txtItemCode');
                 itemText.disabled = false;
                 clearAllItems();
+                }
             },
             error:(res)=>{
                 console.log("res :" + res)
@@ -160,6 +264,17 @@ function loadAllItemsToTheTable() {
     getAllItems();
 }
 
+function searchitem(code) {
+    for(var i in itemTable){
+        if (itemTable[i].getItemCode()==code){
+            return itemTable[i];
+        }
+    }
+    return null;
+}
+
+
+
 
  function getAllItems() {
     var AllItems =[];
@@ -177,7 +292,7 @@ function loadAllItemsToTheTable() {
 
                 })
                 AllItems.push(new ItemDTO(AllValues[0],AllValues[1],AllValues[3],AllValues[2]));
-              
+                setTableVals(AllItems[i]);
                 $('#tblItems').empty();
                 for (let j =0;j<AllItems.length;j++) {
                     let code = AllItems[j].getItemCode();
@@ -199,69 +314,9 @@ function loadAllItemsToTheTable() {
     })
  }
 
-function searchItem(code) {
-    if(code.length>1){
-        $.ajax({
-            url:"http://localhost:8080/Pos_System_App/item",
-            type: "GET",
-            data:{"itemCode": code},
-            headers:{"Content-Type" : "application/json"},
-            success: (res)=>{
-                console.log(JSON.stringify(res));   
-              
-                var values = Object.keys(res).map(function (key){
-                    return res[key];
-                })
-               var itemArr = new ItemDTO(values[0],values[1],values[3],values[2]);
-               if (itemArr != null){
-                    $("#txtItemCode").val(itemArr.getItemCode());
-                    $("#txtItemName").val(itemArr.getItemName());
-                    $("#txtItemQty").val(itemArr.getItemQty());
-                    $("#txtItemPrice").val(itemArr.getItemPrice());
-            
-                    var itemtxt = document.getElementById('txtItemCode');
-                    itemtxt.disabled = true;
-                }else {
-                alert("Item Not Found !");
-                clearAllItems();
-                }
-            },
-            error:(res)=>{
-                console.log("res :" + res)
-               
-            }
-        })
-    } else{
-        alert('Enter a Item Code !')
-    }
+function setTableVals(itemDto){
+    itemTable.push(new ItemDTO(itemDto.getItemCode(),itemDto.getItemName(),itemDto.getItemQty(),itemDto.getItemPrice()))
 }
-
-
-function isAvailable(code){
-    $.ajax({
-        url:"http://localhost:8080/Pos_System_App/item",
-        type: "GET",
-        data:{"itemCode": code},
-        headers:{"Content-Type" : "application/json"},
-        success: (res)=>{
-            console.log(JSON.stringify(res));   
-            var test = Object.keys(res).map(function (key){
-                return res[key];
-            })
-
-          if(test[0] != code){
-            return false;
-          }
-          alert("This ID Already Added !!!")
-        },
-        error:(res)=>{
-            console.log("res :" + res)
-           
-        }
-    })
-}
-
-
 
 function normal(){
     $('#txtItemCode').focus();
@@ -282,7 +337,7 @@ function clearAllItems() {
     $('#txtItemPrice').val('');
     $("#txtItemCode").focus();
     normal();
-    loadAllItemsToTheTable();
+   getAllItems();
 }
 
 // ---------------------------------------------------------------------Validations---------------------------------------------------------------------

@@ -1,57 +1,77 @@
-function OrderDTO(orderId,itemCode,itemName,price,qty,total){
+function OrderDTO(orderId,cusId,orderDate,orderTotal,discount,subTotal,cash,balance){
     
     var orderId = orderId;
-    var itemCode = itemCode;
-    var itemName=itemName;
-    var price = price;
-    var qty = qty;
-    var total =total;
+    var cusId = cusId;
+    var orderDate=orderDate;
+    var orderTotal = orderTotal;
+    var discount = discount;
+    var subTotal =subTotal;
+    var cash = cash;
+    var balance = balance;
 
     this.getOrderId=function(){
         return orderId;
     }
 
-    this.getItemCode=function(){
-        return itemCode;
+    this.getCusId=function(){
+        return cusId;
     }
 
-    this.getItemName=function(){
-        return itemName;
+    this.getOrderDate=function(){
+        return orderDate;
+    }
+    
+    this.getOrderTotal=function(){
+        return orderTotal;
     }
 
-    this.getPrice=function(){
-        return price;
+    this.getDiscount=function(){
+        return discount;
     }
 
-    this.getQty=function(){
-        return qty;
+    this.getSubTotal=function(){
+        return subTotal;
     }
 
-    this.getTotal=function(){
-        return total;
+    this.getCash=function(){
+        return cash;
     }
+
+    this.getBalance=function(){
+        return balance;
+    }
+
+
 
     this.setOrderId = function(newOId){
         orderId=newOId;
     }
 
-    this.setItemCode = function(newItemCode){
-        itemCode=   newItemCode;
+    this.setCusId = function(newCusId){
+        cusId=   newCusId;
     }
 
-    this.setItemName = function(newItemName){
-        itemName=   newItemName;
+    this.setOrderDate = function(newOrderDate){
+        orderDate=   newOrderDate;
     }
 
-    this.setPrice=function(newPrice){
-        price= newPrice;
+    this.setOrderTotal=function(newOrderTotal){
+        orderTotal= newOrderTotal;
     }
 
-    this.setQty = function(newQty){
-        qty=newQty;
+    this.setDiscount = function(newDiscount){
+        discount=newDiscount;
     }
 
-    this.setTotal=function(newTotal){
-        total=newTotal;
+    this.setSubTotal=function(newSubTotal){
+        subTotal=newSubTotal;
+    }
+
+    this.setCash = function(newCash){
+        cash=newCash;
+    }
+
+    this.setBalance=function(newBalance){
+        balance=newBalance;
     }
 }

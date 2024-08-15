@@ -1,63 +1,43 @@
-function OrderDetailsDTO(orderId,date,cusId,total,discount,subTotal,cash,balance){
-
-    var orderId=orderId;
-    var date=date;
-    var cusId=cusId;
-    var total =total;
-    var discount=discount;
-    var subTotal=subTotal;
-    var cash= cash;
-    var balance=balance;
-
-    this.getOrderId=function () {
-        return orderId;
-    }
-    this.getDate=function(){
-        return date;
-    }
-    this.getCusId=function(){
-        return cusId;
-    }
-    this.getTotal = function(){
-        return total;
-    }
-    this.getDiscount=function(){
-        return discount;
-    }
-    this.getSubTotal=function(){
-        return subTotal;
-    }
-    this.getCash=function(){
-        return cash;
-    }
-    this.getBalance=function(){
-        return balance;
+class OrderDetailsDTO {
+    constructor(orderId, itemCode, buyQty, itemTotal) {
+        // Initialize properties
+        this.orderId = orderId;
+        this.itemCode = itemCode;
+        this.buyQty = buyQty;
+        this.itemTotal = itemTotal;
     }
 
-    
+    // Getter methods
+    getOrderId() {
+        return this.orderId;
+    }
 
-    this.setOrderId=function(newOId){
-        orderId=newOId;
+    getItemCode() {
+        return this.itemCode;
     }
-    this.setDate=function(newDate){
-        date=newDate;
+
+    getBuyQty() {
+        return this.buyQty;
     }
-    this.setCusId=function(newCusId){
-        cusId=newCusId;
+
+    getItemTotal() {
+        return this.itemTotal;
     }
-    this.setTotal=function(newTotal){
-        total=newTotal;
+
+    // Setter methods
+    setOrderId(newOId) {
+        this.orderId = newOId;
     }
-    this.setDiscount=function(newDiscount){
-        discount=newDiscount;
+
+    setItemCode(newCode) {
+        this.itemCode = newCode;
     }
-    this.setSubTotal= function(newSubTotal){
-        subTotal=newSubTotal;
+
+    setBuyQty(newQty) {
+        this.buyQty = newQty;
     }
-    this.setCash = function(newCash){
-        cash = newCash;
-    }
-    this.setBalance=function(newBal){
-        balance = newBal;
+
+    setItemTotal(newTotal) {
+        this.itemTotal = newTotal;
     }
 }

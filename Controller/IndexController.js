@@ -12,8 +12,6 @@ $('#homeBtn').click(function (event) {
 });
 
 
-
-
 customers.style.display='none'
 item.style.display='none'
 order.style.display='none'
